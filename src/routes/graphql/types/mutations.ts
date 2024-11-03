@@ -58,10 +58,10 @@ export const Mutations = new GraphQLObjectType({
                 id: { type: new GraphQLNonNull(UUIDType) },
                 dto: { type: new GraphQLNonNull(CreateProfileInputType) },
             },
-            resolve: async (_, args, context) => {
+            resolve: async (_, { id, dto }, context) => {
                 return await context.profile.update({
-                    where: { id: args.id },
-                    data: args.dto,
+                    where: { id: id },
+                    data: dto,
                 });
             }
         },
@@ -71,24 +71,53 @@ export const Mutations = new GraphQLObjectType({
                 id: { type: new GraphQLNonNull(UUIDType) },
                 dto: { type: new GraphQLNonNull(ChangeUserInputType) },
             },
-            resolve: async (_, args, context) => {
+            resolve: async (_, { id, dto }, context) => {
                 return await context.user.update({
-                    where: { id: args.id },
-                    data: args.dto,
+                    where: { id: id },
+                    data: dto,
                 });
             }
         },
         deleteUser: {
-            type: new GraphQLNonNull(UserType),
+            type: new GraphQLNonNull(GraphQLString),
             args: {
                 id: { type: new GraphQLNonNull(UUIDType) }
             },
-            resolve: async (_, args, context) => {
-                return await context.user.delete({
+            resolve: async (_, { id }, context) => {
+                await context.user.delete({
                     where: {
-                        id: args.id,
+                        id: id,
                     },
                 });
+                return null;
+            }
+        },
+        deletePost: {
+            type: new GraphQLNonNull(GraphQLString),
+            args: {
+                id: { type: new GraphQLNonNull(UUIDType) }
+            },
+            resolve: async (_, { id }, context) => {
+                await context.post.delete({
+                    where: {
+                        id: id,
+                    },
+                });
+                return null;
+            }
+        },
+        deleteProfile: {
+            type: new GraphQLNonNull(GraphQLString),
+            args: {
+                id: { type: new GraphQLNonNull(UUIDType) }
+            },
+            resolve: async (_, { id }, context) => {
+                await context.profile.delete({
+                    where: {
+                        id: id,
+                    },
+                });
+                return null;
             }
         },
     }
