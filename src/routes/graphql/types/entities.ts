@@ -52,7 +52,16 @@ export const UserType = new GraphQLObjectType({
         id: { type: new GraphQLNonNull(UUIDType) },
         name: { type: new GraphQLNonNull(GraphQLString) },
         balance: { type: new GraphQLNonNull(GraphQLFloat) },
-        profile: { type: ProfileType },
+        profile: {
+            type: ProfileType,
+            resolve: async (parent, _, context) => {
+                return await context.profile.findUnique({
+                    where: {
+                        userId: parent.id,
+                    },
+                });
+            }
+        },
         posts: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
             resolve: async (parent, _, context) => {
@@ -65,11 +74,6 @@ export const UserType = new GraphQLObjectType({
         },
         userSubscribedTo: {
             type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-            // args: {
-            //     id: {
-            //         type: UUIDType,
-            //     },
-            // },
             resolve: async (parent, _, context) => {
                 return await context.user.findMany({
                     where: {
