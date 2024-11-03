@@ -120,5 +120,39 @@ export const Mutations = new GraphQLObjectType({
                 return null;
             }
         },
+        subscribeTo: {
+            type: new GraphQLNonNull(GraphQLString),
+            args: {
+                userId: { type: new GraphQLNonNull(UUIDType) },
+                authorId: { type: new GraphQLNonNull(UUIDType) },
+            },
+            resolve: async (_, { userId, authorId }, context) => {
+                await context.subscribersOnAuthors.create({
+                    data: {
+                        subscriberId: userId,
+                        authorId: authorId,
+                    },
+                });
+                return null;
+            }
+        },
+        unsubscribeFrom: {
+            type: new GraphQLNonNull(GraphQLString),
+            args: {
+                userId: { type: new GraphQLNonNull(UUIDType) },
+                authorId: { type: new GraphQLNonNull(UUIDType) },
+            },
+            resolve: async (_, { userId, authorId }, context) => {
+                await context.subscribersOnAuthors.delete({
+                    where: {
+                        subscriberId_authorId: {
+                            subscriberId: userId,
+                            authorId: authorId,
+                        },
+                    },
+                });
+                return null;
+            }
+        },
     }
 });
