@@ -1,6 +1,6 @@
 import { GraphQLObjectType, GraphQLNonNull, GraphQLString } from "graphql";
 import { UserType, ProfileType, PostType } from './entities.js';
-import { CreateUserInputType, CreateProfileInputType, CreatePostInputType, ChangePostInputType, ChangeUserInputType } from './inputs.js';
+import { CreateUserInputType, CreateProfileInputType, CreatePostInputType, ChangePostInputType, ChangeUserInputType, ChangeProfileInputType } from './inputs.js';
 import { UUIDType } from './uuid.js'
 
 export const Mutations = new GraphQLObjectType({
@@ -56,7 +56,7 @@ export const Mutations = new GraphQLObjectType({
             type: new GraphQLNonNull(ProfileType),
             args: {
                 id: { type: new GraphQLNonNull(UUIDType) },
-                dto: { type: new GraphQLNonNull(CreateProfileInputType) },
+                dto: { type: new GraphQLNonNull(ChangeProfileInputType) },
             },
             resolve: async (_, { id, dto }, context) => {
                 return await context.profile.update({
@@ -151,7 +151,7 @@ export const Mutations = new GraphQLObjectType({
                         },
                     },
                 });
-                return null;
+                return '';
             }
         },
     }
