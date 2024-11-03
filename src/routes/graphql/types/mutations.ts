@@ -89,7 +89,7 @@ export const Mutations = new GraphQLObjectType({
                         id: id,
                     },
                 });
-                return null;
+                return '';
             }
         },
         deletePost: {
@@ -103,7 +103,7 @@ export const Mutations = new GraphQLObjectType({
                         id: id,
                     },
                 });
-                return null;
+                return "";
             }
         },
         deleteProfile: {
@@ -117,7 +117,7 @@ export const Mutations = new GraphQLObjectType({
                         id: id,
                     },
                 });
-                return null;
+                return "";
             }
         },
         subscribeTo: {
@@ -133,7 +133,7 @@ export const Mutations = new GraphQLObjectType({
                         authorId: authorId,
                     },
                 });
-                return null;
+                return "";
             }
         },
         unsubscribeFrom: {
