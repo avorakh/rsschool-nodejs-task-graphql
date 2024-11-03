@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql, GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList } from 'graphql';
+import { graphql, GraphQLObjectType, GraphQLSchema, GraphQLNonNull, GraphQLList, parse, validate } from 'graphql';
 import { MemberType, MemberTypeId, PostType, ProfileType, UserType } from './types/entities.js';
 import { UUIDType } from './types/uuid.js'
 
@@ -13,8 +13,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       fields: {
         memberTypes: {
           type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(MemberType))),
-          resolve: async () => {
-            return prisma.memberType.findMany();
+          resolve: async(_, __, context) => {
+            return await context.memberType.findMany();
           }
         },
         memberType: {
@@ -22,16 +22,33 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           args: {
             id: { type: new GraphQLNonNull(MemberTypeId) },
           },
-          resolve: async (_source, { id }) => {
-            return prisma.memberType.findUnique({
+          resolve: async (_, { id },  context) => {
+            return await context.memberType.findUnique({
+              where: { id },
+            });
+          },
+        },
+        users: {
+          type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
+          resolve: async (_, __, context) => {
+            return await context.user.findMany();
+          }
+        },
+        user: {
+          type: UserType,
+          args: {
+            id: { type: new GraphQLNonNull(UUIDType) },
+          },
+          resolve: async (_, { id }, context) => {
+            return await context.user.findUnique({
               where: { id },
             });
           },
         },
         posts: {
           type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(PostType))),
-          resolve: async () => {
-            return prisma.post.findMany();
+          resolve: async (_, __, context) => {
+            return await context.post.findMany();
           }
         },
         post: {
@@ -39,8 +56,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           args: {
             id: { type: new GraphQLNonNull(UUIDType) },
           },
-          resolve: async (_source, { id }) => {
-            return prisma.post.findUnique({
+          resolve: async (_, { id }, context) => {
+            return await context.post.findUnique({
               where: { id },
             });
           },
@@ -56,31 +73,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           args: {
             id: { type: new GraphQLNonNull(UUIDType) },
           },
-          resolve: async (_source, { id }) => {
-            return prisma.profile.findUnique({
+          resolve: async (_, { id }, context) => {
+            return await context.profile.findUnique({
               where: { id },
             });
           },
         },
-        users: {
-          type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(UserType))),
-          resolve: async () => {
-            return prisma.user.findMany();
-          }
-        },
-        user: {
-          type: UserType,
-          args: {
-            id: { type: new GraphQLNonNull(UUIDType) },
-          },
-          resolve: async (_source, { id }) => {
-            return prisma.user.findUnique({
-              where: { id },
-            });
-          },
-        },
-
-
       }
     })
   })
@@ -96,10 +94,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     },
     async handler(req) {
+      const { query, variables } = req.body;
+
+      const errors = validate(schema, parse(query));
+      
+      if (errors.length > 0) {
+        return { errors };
+      } 
+      
       return graphql({
         schema,
-        source: req.body.query,
-        variableValues: req.body.variables,
+        source: query,
+        variableValues: variables,
+        contextValue: prisma
       });
     },
   });
