@@ -1,6 +1,6 @@
 import { GraphQLObjectType, GraphQLNonNull } from "graphql";
-import { UserType } from './entities.js';
-import { CreateUserInputType, } from './inputs.js';
+import { UserType, ProfileType } from './entities.js';
+import { CreateUserInputType, CreateProfileInputType } from './inputs.js';
 
 export const Mutations = new GraphQLObjectType({
     name: "Mutations",
@@ -15,6 +15,17 @@ export const Mutations = new GraphQLObjectType({
                     data: dto,
                 });
             }
-        }
+        },
+        createProfile: {
+            type: new GraphQLNonNull(ProfileType),
+            args: {
+                dto: { type: new GraphQLNonNull(CreateProfileInputType) },
+            },
+            resolve: async (_, { dto }, context) => {
+                return await context.profile.create({
+                    data: dto,
+                });
+            }
+        },
     }
 });
